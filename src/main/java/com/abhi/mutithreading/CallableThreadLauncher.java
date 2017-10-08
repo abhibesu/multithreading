@@ -1,36 +1,64 @@
 package com.abhi.mutithreading;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class CallableThreadLauncher {
-	public static void main(String[] args) throws InterruptedException, ExecutionException {
-		System.out.println(Thread.currentThread().getName() + ": CallableTest");
 
+	public static class FactorialCalculator implements Callable<Integer> {
 
-		ExecutorService executor = Executors.newFixedThreadPool(1);
-		
-		Callable<Integer> task = () -> {
-		    try {
-		        TimeUnit.SECONDS.sleep(1);
-		        return 123;
-		    }
-		    catch (InterruptedException e) {
-		        throw new IllegalStateException("task interrupted", e);
-		    }
-		};
-		
-		Future<Integer> future = executor.submit(task);
+		private Integer number;
 
-		System.out.println("future done? " + future.isDone());
+		public FactorialCalculator(Integer number) {
+			this.number = number;
+		}
 
-		Integer result = future.get();
+		@Override
+		public Integer call() throws Exception {
+			int result = 1;
+			if ((number == 0) || (number == 1)) {
+				result = 1;
+			} else {
+				for (int i = 2; i <= number; i++) {
+					result *= i;
+					TimeUnit.MILLISECONDS.sleep(20);
+				}
+			}
+			System.out.println("Result for number - " + number + " -> " + result);
+			return result;
+		}
+	}
 
-		System.out.println("future done? " + future.isDone());
-		System.out.print("result: " + result);
+	public static void main(String[] args) {
+		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+
+		List<Future<Integer>> resultList = new ArrayList<>();
+
+		Random random = new Random();
+
+		for (int i = 0; i < 4; i++) {
+			Integer number = random.nextInt(10);
+			FactorialCalculator calculator  = new FactorialCalculator(number);
+			Future<Integer> result = executor.submit(calculator);
+			resultList.add(result);
+		}
+
+		for (Future<Integer> future : resultList) {
+			try {
+				System.out.println(
+						"Future result is - " + " - " + future.get() + "; And Task done is " + future.isDone());
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+		// shut down the executor service now
+		executor.shutdown();
 	}
 }
