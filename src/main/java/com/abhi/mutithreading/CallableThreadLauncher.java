@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class CallableThreadLauncher {
@@ -22,6 +22,8 @@ public class CallableThreadLauncher {
 
 		@Override
 		public Integer call() throws Exception {
+			System.out.println("For number :" + number + " Starting time: " + System.currentTimeMillis()
+					+ " , Starting Thread:" + Thread.currentThread().getName());
 			int result = 1;
 			if ((number == 0) || (number == 1)) {
 				result = 1;
@@ -31,21 +33,22 @@ public class CallableThreadLauncher {
 					TimeUnit.MILLISECONDS.sleep(20);
 				}
 			}
-			System.out.println("Result for number - " + number + " -> " + result);
+			System.out.println("Result for number - " + number + " -> " + result + " Ending time: "
+					+ System.currentTimeMillis() + " , Starting Thread:" + Thread.currentThread().getName());
 			return result;
 		}
 	}
 
 	public static void main(String[] args) {
-		ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-
+		//ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+		ExecutorService executor = Executors.newFixedThreadPool(4);
 		List<Future<Integer>> resultList = new ArrayList<>();
 
 		Random random = new Random();
 
 		for (int i = 0; i < 4; i++) {
 			Integer number = random.nextInt(10);
-			FactorialCalculator calculator  = new FactorialCalculator(number);
+			FactorialCalculator calculator = new FactorialCalculator(number);
 			Future<Integer> result = executor.submit(calculator);
 			resultList.add(result);
 		}
