@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class CallableThreadLauncher {
 
@@ -30,7 +31,7 @@ public class CallableThreadLauncher {
 			} else {
 				for (int i = 2; i <= number; i++) {
 					result *= i;
-					TimeUnit.MILLISECONDS.sleep(20);
+					TimeUnit.SECONDS.sleep(4);
 				}
 			}
 			System.out.println("Result for number - " + number + " -> " + result + " Ending time: "
@@ -56,12 +57,18 @@ public class CallableThreadLauncher {
 		for (Future<Integer> future : resultList) {
 			try {
 				System.out.println(
+						"Future result is - " + " - " + future.get(3, TimeUnit.SECONDS));
+			} catch (InterruptedException | ExecutionException|TimeoutException e) {
+				e.printStackTrace();
+			}
+			try {
+				System.out.println(
 						"Future result is - " + " - " + future.get() + "; And Task done is " + future.isDone());
 			} catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
 		}
 		// shut down the executor service now
-		executor.shutdown();
+		executor.shutdownNow();
 	}
 }
